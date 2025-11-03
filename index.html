@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌃 欠けた星座（空亡）占い【修正版】</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; }
+        h1 { color: #4a4a6a; text-align: center; }
+        .input-group { margin-bottom: 15px; padding: 10px; border: 1px solid #eee; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input[type="text"], input[type="number"] { width: calc(100% - 12px); padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 10px 20px; background-color: #4a4a6a; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; }
+        button:hover { background-color: #6a6a8a; }
+        #result { margin-top: 20px; padding: 15px; border: 2px solid #a8a8c8; border-radius: 5px; background-color: #f7f7ff; }
+        .affinity { font-size: 1.2em; font-weight: bold; margin-top: 10px; color: #d04040; }
+    </style>
+</head>
+<body>
+
+<h1>🌃 欠けた星座（空亡）占い【最終版】</h1>
+
+<div class="input-group">
+    <label for="name1">一人目の名前:</label>
+    <input type="text" id="name1" placeholder="例: ユウキ">
+    <label for="month1">誕生月 (1-12):</label>
+    <input type="number" id="month1" min="1" max="12" placeholder="12">
+    <label for="day1">誕生日 (1-31):</label>
+    <input type="number" id="day1" min="1" max="31" placeholder="25">
+</div>
+
+<div class="input-group">
+    <label for="name2">二人目の名前:</label>
+    <input type="text" id="name2" placeholder="例: アオイ">
+    <label for="month2">誕生月 (1-12):</label>
+    <input type="number" id="month2" min="1" max="12" placeholder="5">
+    <label for="day2">誕生日 (1-31):</label>
+    <input type="number" id="day2" min="1" max="31" placeholder="10">
+</div>
+
+<button onclick="runUranai()">占う！</button>
+
+<div id="result">
+    ここに結果が表示されます。
+</div>
+
+<script>
+// ----------------------------------------------------
+// 2. JavaScript (修正後のロジック部分)
+// ----------------------------------------------------
+
+// 1. 欠けた星座の定義 (運命数1-6と割り当て)
+const SEIZA_TYPES = {
+    1: "火の灯籠", 2: "霧の湖畔", 3: "鋼の砂時計", 
+    4: "無音の木陰", 5: "重力のない城", 6: "忘れられた大地"
+};
+
+// 2. 相性ルールの定義 (最高の相性: 運命の補完者)
+const COMPLEMENT_MAP = {
+    1: 6, 2: 5, 3: 4, 
+    4: 3, 5: 2, 6: 1
+};
+
+// 数秘術に近いロジック：月日を分解し、1桁になるまで合計して運命数 (1-9) を出す関数
+function getSingleDigit(num) {
+    let sum = 0;
+    while (num > 0 || sum > 9) {
+        if (num === 0) {
+            num = sum;
+            sum = 0;
+        }
+        sum += num % 10;
+        num = Math.floor(num / 10);
+    }
+    return sum; // 結果は1～9になる (11, 22, 33などのマスターナンバーは考慮しない簡易版)
+}
+
+// 最終的な星座タイプ番号(1～6)を決定する
+function calculateSeizaNumber(month, day) {
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+    // 月と日の数値を結合して一括で運命数を計算
+    const total = getSingleDigit(parseInt(month)) + getSingleDigit(parseInt(day));
+    
+    // 最終合計を1桁にし、0 (10, 20など)を1とする
+    let finalNum = getSingleDigit(total);
+    if (finalNum === 0) finalNum = 1; // 0を避ける
+
+    // 運命数 (1-9) を 6つの星座タイプ (1-6) に割り振る
+    // 9と7は6, 8は5に割り振る (簡易的なマッピング)
+    if (finalNum === 7 || finalNum === 9) return 6; 
+    if (finalNum === 8) return 5;
+    
+    return finalNum; // 1, 2, 3, 4, 5, 6
+}
+
+// 相性を判定し、結果のHTMLを返す (前回とロジックは同じ)
+function determineAffinity(num1, num2, name1, name2) {
+    const type1 = SEIZA_TYPES[num1];
+    const type2 = SEIZA_TYPES[num2];
+    let affinity, detail;
+
+    if (COMPLEMENT_MAP[num1] === num2) {
+        affinity = "運命の補完者";
+        detail = "最高の相性です！お互いの根源的な欠落を完璧に埋め合えます。二人は出会うべくして出会った運命的なペアです。";
+    } else if (num1 === num2) {
+        affinity = "静かな共鳴者";
+        detail = "同じ欠落を持つため、深く理解し合えますが、大きな変化を起こすには二人で協力が必要です。";
+    } else {
+        affinity = "摩擦の創造者";
+        detail = "お互いの価値観が大きく異なるため、時には激しい衝突を伴いますが、それは二人の成長のチャンスでもあります。";
+    }
+
+    return `
+        <p>🌟 <b>${name1}</b> さんの運命数: ${num1} -> 欠けた星座: <b>【${type1}】</b></p>
+        <p>🌟 <b>${name2}</b> さんの運命数: ${num2} -> 欠けた星座: <b>【${type2}】</b></p>
+        <div class="affinity">💖 ${name1} と ${name2} の相性は... 【${affinity}】です。</div>
+        <p>詳細: ${detail}</p>
+    `;
+}
+
+// 占いを実行し、結果を画面に表示する (前回とロジックは同じ)
+function runUranai() {
+    const name1 = document.getElementById('name1').value || '一人目';
+    const month1 = document.getElementById('month1').value;
+    const day1 = document.getElementById('day1').value;
+    const name2 = document.getElementById('name2').value || '二人目';
+    const month2 = document.getElementById('month2').value;
+    const day2 = document.getElementById('day2').value;
+
+    const num1 = calculateSeizaNumber(month1, day1);
+    const num2 = calculateSeizaNumber(month2, day2);
+
+    if (num1 === null || num2 === null) {
+        document.getElementById('result').innerHTML = "⚠️ 誕生月・誕生日を正しく入力してください。";
+        return;
+    }
+
+    const resultHTML = determineAffinity(num1, num2, name1, name2);
+    document.getElementById('result').innerHTML = resultHTML;
+}
+</script>
+</body>
+</html>
